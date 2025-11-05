@@ -12,11 +12,12 @@ interface AppDataContextType {
   addLog: (entry: Omit<LogEntry, 'id' | 'date'>) => void;
   updateLog: (updatedEntry: LogEntry) => void;
   deleteLog: (logId: string, date: string) => void;
+  updateProfile: (updatedProfile: UserProfile) => void;
 }
 
 const AppDataContext = createContext<AppDataContextType | undefined>(undefined);
 
-export function AppDataProvider({ children, initialProfile }: { children: ReactNode; initialProfile: UserProfile }) {
+export function AppDataProvider({ children, initialProfile, onProfileUpdate }: { children: ReactNode; initialProfile: UserProfile, onProfileUpdate: (profile: UserProfile) => void; }) {
   const [profile, setProfile] = useLocalStorage<UserProfile | null>('user-profile', initialProfile);
   const [logs, setLogs] = useLocalStorage<Logs>('daily-logs', {});
 
@@ -58,9 +59,14 @@ export function AppDataProvider({ children, initialProfile }: { children: ReactN
     });
   };
 
+  const updateProfile = (updatedProfile: UserProfile) => {
+    setProfile(updatedProfile);
+    onProfileUpdate(updatedProfile);
+  }
+
 
   return (
-    <AppDataContext.Provider value={{ profile, setProfile, logs, addLog, updateLog, deleteLog }}>
+    <AppDataContext.Provider value={{ profile, setProfile, logs, addLog, updateLog, deleteLog, updateProfile }}>
       {children}
     </AppDataContext.Provider>
   );

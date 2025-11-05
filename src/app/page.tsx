@@ -35,12 +35,16 @@ export default function Home() {
     );
   }
 
+  const handleProfileUpdate = (updatedProfile: UserProfile) => {
+    setProfile(updatedProfile);
+  }
+
   if (!profile) {
     return <UserProfileSetup onProfileCreated={handleProfileCreated} />;
   }
 
   return (
-    <AppDataProvider initialProfile={profile}>
+    <AppDataProvider initialProfile={profile} onProfileUpdate={handleProfileUpdate}>
       <MainApp />
     </AppDataProvider>
   );
