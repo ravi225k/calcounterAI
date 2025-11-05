@@ -9,7 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const AnalyzeFoodInputSchema = z.object({
   foodDescription: z
@@ -36,7 +36,7 @@ const analyzeFoodPrompt = ai.definePrompt({
   name: 'analyzeFoodPrompt',
   input: {schema: AnalyzeFoodInputSchema},
   output: {schema: AnalyzeFoodOutputSchema},
-  system: `You are an expert nutritionist. Your primary function is to determine the nutritional content of a food item based on a user's description. You must be as accurate as possible. For branded food products, you must look up the exact nutritional information from the manufacturer. For generic foods, use the most reliable data available. Do not estimate unless absolutely necessary, and if you must estimate, you must state that the result is an estimate.`,
+  system: `You are an expert nutritionist. Your primary function is to determine the nutritional content of a food item based on a user's description. You must be as accurate as possible. For branded food products, you MUST use your knowledge to look up the exact nutritional information from the manufacturer. For generic foods, use the most reliable data available. Do not estimate unless absolutely necessary, and if you must estimate, you must state that the result is an estimate.`,
   prompt: `Analyze the following food description and provide its precise nutritional content.
 
 Food Description: {{{foodDescription}}}`,
