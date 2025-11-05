@@ -38,9 +38,9 @@ const CalorieProgress = () => {
         <Card>
             <CardContent className="space-y-4 pt-6">
                 <div>
-                    <div className="mb-2">
+                    <div className="mb-2 text-center">
                         <span className="text-4xl font-bold text-foreground">{Math.round(dailyTotals.calories)}</span>
-                        <span className="text-sm text-muted-foreground"> / {profile?.dailyCalorieTarget} kcal</span>
+                        <span className="text-lg text-muted-foreground"> / {profile?.dailyCalorieTarget} kcal</span>
                     </div>
                     <Progress value={calorieProgress} className="w-full" />
                 </div>
@@ -135,13 +135,11 @@ const FoodAnalyzer = () => {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Utensils /> Log a Meal with AI</CardTitle>
-                <CardDescription>Describe your meal and let AI estimate the nutrition.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                  <div className="grid grid-cols-2 gap-4">
-                    <Button variant="outline"><Camera className="mr-2" /> Take Photo</Button>
-                    <Button variant="outline"><Upload className="mr-2" /> Upload Image</Button>
+                    <Button variant="default" className="bg-black text-white hover:bg-black/90"><Camera className="mr-2" /> Take Photo</Button>
+                    <Button variant="secondary"><Upload className="mr-2" /> Upload Image</Button>
                 </div>
                 <Textarea
                     placeholder="E.g., 1 bowl of oatmeal with a scoop of chocolate protein powder and a banana."
@@ -274,7 +272,6 @@ export default function HomeTab() {
   return (
     <div className="space-y-6">
       <CalorieProgress />
-      <Separator />
       <FoodAnalyzer />
       <Separator />
       <DietaryInsights />
