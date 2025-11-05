@@ -184,14 +184,14 @@ const TodayLogs = () => {
 export default function DailyLogsTab() {
   return (
     <Tabs defaultValue="today" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="today">Today</TabsTrigger>
-            <TabsTrigger value="previous">Previous Logs</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 gap-2 h-auto rounded-none bg-transparent p-0">
+            <TabsTrigger value="today" className="h-12 rounded-md border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none">Today</TabsTrigger>
+            <TabsTrigger value="previous" className="h-12 rounded-md border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none">Previous Logs</TabsTrigger>
         </TabsList>
-        <TabsContent value="today">
+        <TabsContent value="today" className="mt-4">
             <TodayLogs />
         </TabsContent>
-        <TabsContent value="previous">
+        <TabsContent value="previous" className="mt-4">
             <PreviousLogs />
         </TabsContent>
     </Tabs>
