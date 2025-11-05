@@ -2,10 +2,10 @@
 
 import { useState, useMemo } from 'react';
 import { useAppData } from '@/contexts/AppDataContext';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import type { LogEntry } from '@/lib/types';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCaption } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,9 @@ import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { Edit2, Trash2, Save, XCircle, CalendarDays } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const LogList = ({ date }: { date: Date }) => {
+const LogList = ({ date, showHeader = true }: { date: Date, showHeader?: boolean }) => {
     const { logs, updateLog, deleteLog } = useAppData();
     const { toast } = useToast();
     const [editingLogId, setEditingLogId] = useState<string | null>(null);
@@ -22,6 +23,10 @@ const LogList = ({ date }: { date: Date }) => {
 
     const dateKey = format(date, 'yyyy-MM-dd');
     const dayLogs = useMemo(() => logs[dateKey] || [], [logs, dateKey]);
+
+    const totalCalories = useMemo(() => {
+        return dayLogs.reduce((sum, log) => sum + log.calories, 0);
+    }, [dayLogs]);
 
     const handleEdit = (log: LogEntry) => {
         setEditingLogId(log.id);
@@ -63,10 +68,12 @@ const LogList = ({ date }: { date: Date }) => {
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle>Logs for {format(date, 'MMMM d, yyyy')}</CardTitle>
-            </CardHeader>
-            <CardContent>
+            {showHeader && (
+                 <CardHeader>
+                    <CardTitle>Logs for {format(date, 'MMMM d, yyyy')}</CardTitle>
+                </CardHeader>
+            )}
+            <CardContent className={!showHeader ? "pt-6" : ""}>
                 <div className="overflow-x-auto">
                     <Table>
                         {dayLogs.length === 0 && <TableCaption>No meals logged for this day.</TableCaption>}
@@ -134,31 +141,59 @@ const LogList = ({ date }: { date: Date }) => {
                     </Table>
                 </div>
             </CardContent>
+            <CardFooter>
+                <div className="text-right w-full font-bold">
+                    Total Calories: {Math.round(totalCalories)} kcal
+                </div>
+            </CardFooter>
         </Card>
     );
 };
 
-export default function DailyLogsTab() {
-  const [date, setDate] = useState<Date | undefined>(new Date());
 
+const PreviousLogs = () => {
+    const [date, setDate] = useState<Date | undefined>(new Date());
+
+    return (
+         <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><CalendarDays /> Select a Date</CardTitle>
+                    <CardDescription>View your nutritional logs for any day in the past.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex justify-center">
+                    <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        className="rounded-md border"
+                        disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                        />
+                </CardContent>
+            </Card>
+        
+            {date && <LogList date={date} />}
+        </div>
+    )
+}
+
+const TodayLogs = () => {
+    return <LogList date={new Date()} showHeader={false} />;
+}
+
+export default function DailyLogsTab() {
   return (
-    <div className="space-y-6">
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><CalendarDays /> Select a Date</CardTitle>
-                <CardDescription>View your nutritional logs for any day.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex justify-center">
-                 <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    className="rounded-md border"
-                    />
-            </CardContent>
-        </Card>
-      
-      {date && <LogList date={date} />}
-    </div>
+    <Tabs defaultValue="today" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="today">Today</TabsTrigger>
+            <TabsTrigger value="previous">Previous Logs</TabsTrigger>
+        </TabsList>
+        <TabsContent value="today">
+            <TodayLogs />
+        </TabsContent>
+        <TabsContent value="previous">
+            <PreviousLogs />
+        </TabsContent>
+    </Tabs>
   );
 }

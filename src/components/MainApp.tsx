@@ -30,12 +30,12 @@ export default function MainApp() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="home">Home</TabsTrigger>
-            <TabsTrigger value="logs">Daily Logs</TabsTrigger>
+            <TabsTrigger value="my-logs">My Logs</TabsTrigger>
           </TabsList>
           <TabsContent value="home">
             <HomeTab />
           </TabsContent>
-          <TabsContent value="logs">
+          <TabsContent value="my-logs">
             <DailyLogsTab />
           </TabsContent>
           <TabsContent value="profile">
