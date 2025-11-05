@@ -38,9 +38,9 @@ const CalorieProgress = () => {
         <Card>
             <CardContent className="space-y-4 pt-6">
                 <div>
-                    <div className="flex justify-between mb-1 text-sm font-medium">
-                        <span>Calories</span>
-                        <span>{Math.round(dailyTotals.calories)} / {profile?.dailyCalorieTarget} kcal</span>
+                    <div className="mb-2">
+                        <span className="text-2xl font-bold text-foreground">{Math.round(dailyTotals.calories)}</span>
+                        <span className="text-sm text-muted-foreground"> / {profile?.dailyCalorieTarget} kcal</span>
                     </div>
                     <Progress value={calorieProgress} className="w-full" />
                 </div>
