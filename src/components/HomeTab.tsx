@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useAppData } from '@/contexts/AppDataContext';
-import { analyzeFood, AnalyzeFoodOutput } from '@/ai/flows/analyze-food-with-ai';
+import { analyzeFood } from '@/ai/flows/analyze-food-with-ai';
+import { analyzeFoodFromImage } from '@/ai/flows/analyze-food-from-image';
+import type { AnalyzeFoodOutput } from '@/ai/schemas';
 import { analyzeDietaryIntake } from '@/ai/flows/ai-powered-dietary-insights';
 import type { LogEntry } from '@/lib/types';
 import { format } from 'date-fns';
@@ -13,6 +15,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { Utensils, Zap, Sparkles, Plus, Loader2, Camera, Upload, BrainCircuit, Wand2 } from 'lucide-react';
 
@@ -75,6 +79,42 @@ const FoodAnalyzer = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [analysisResult, setAnalysisResult] = useState<AnalyzeFoodOutput | null>(null);
 
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+
+
+    useEffect(() => {
+        if (isCameraOpen) {
+            const getCameraPermission = async () => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    setHasCameraPermission(true);
+                    if (videoRef.current) {
+                        videoRef.current.srcObject = stream;
+                    }
+                } catch (error) {
+                    console.error('Error accessing camera:', error);
+                    setHasCameraPermission(false);
+                    toast({
+                        variant: 'destructive',
+                        title: 'Camera Access Denied',
+                        description: 'Please enable camera permissions in your browser settings.',
+                    });
+                }
+            };
+            getCameraPermission();
+        } else {
+            // Stop camera stream when dialog is closed
+            if (videoRef.current && videoRef.current.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                stream.getTracks().forEach(track => track.stop());
+            }
+        }
+    }, [isCameraOpen, toast]);
+
     const handleAnalyze = async () => {
         if (!foodDescription.trim()) {
             toast({ title: "Error", description: "Please enter a food description.", variant: "destructive" });
@@ -85,6 +125,7 @@ const FoodAnalyzer = () => {
         try {
             const result = await analyzeFood({ foodDescription });
             setAnalysisResult({
+                ...result,
                 totalCalories: Math.round(result.totalCalories),
                 macros: {
                     carbs: Math.round(result.macros.carbs),
@@ -92,11 +133,68 @@ const FoodAnalyzer = () => {
                     protein: Math.round(result.macros.protein),
                 }
             });
+            // Also update the food description with the one from the AI
+            setFoodDescription(result.foodDescription);
         } catch (error) {
             console.error(error);
             toast({ title: "Analysis Failed", description: "Could not analyze food. Please try again.", variant: "destructive" });
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleImageAnalysis = async (dataUri: string) => {
+        setIsLoading(true);
+        setAnalysisResult(null);
+        setFoodDescription('');
+        try {
+            const result = await analyzeFoodFromImage({ foodImage: dataUri });
+            setAnalysisResult({
+                ...result,
+                totalCalories: Math.round(result.totalCalories),
+                macros: {
+                    carbs: Math.round(result.macros.carbs),
+                    fats: Math.round(result.macros.fats),
+                    protein: Math.round(result.macros.protein),
+                }
+            });
+            setFoodDescription(result.foodDescription);
+        } catch (error) {
+            console.error(error);
+            toast({ title: "Analysis Failed", description: "Could not analyze image. Please try again.", variant: "destructive" });
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                handleImageAnalysis(e.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleTakePhotoClick = () => {
+        setIsCameraOpen(true);
+    };
+
+    const handleCapture = () => {
+        if (videoRef.current && canvasRef.current) {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            if (context) {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const dataUri = canvas.toDataURL('image/jpeg');
+                handleImageAnalysis(dataUri);
+                setIsCameraOpen(false);
+            }
         }
     };
     
@@ -121,7 +219,7 @@ const FoodAnalyzer = () => {
         if (!analysisResult) return;
         
         const logEntry: Omit<LogEntry, 'id' | 'date'> = {
-            foodDescription,
+            foodDescription: foodDescription || 'Analyzed from image',
             calories: analysisResult.totalCalories,
             ...analysisResult.macros
         };
@@ -132,63 +230,110 @@ const FoodAnalyzer = () => {
     };
 
     return (
-        <Card>
-            <CardHeader>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                 <div className="grid grid-cols-2 gap-4">
-                    <Button variant="default" className="bg-black text-white hover:bg-black/90"><Camera className="mr-2" /> Take Photo</Button>
-                    <Button variant="secondary"><Upload className="mr-2" /> Upload Image</Button>
-                </div>
-                <Textarea
-                    placeholder="E.g., 1 bowl of oatmeal with a scoop of chocolate protein powder and a banana."
-                    value={foodDescription}
-                    onChange={(e) => setFoodDescription(e.target.value)}
-                    rows={4}
-                />
-            </CardContent>
-            <CardFooter className="flex flex-col items-stretch gap-4">
-                <Button onClick={handleAnalyze} disabled={isLoading || !foodDescription.trim()}>
-                    {isLoading ? <Loader2 className="animate-spin" /> : <Sparkles className="mr-2" />}
-                    Analyze Food
-                </Button>
-
-                {analysisResult && (
-                    <div className="space-y-4 rounded-lg border bg-secondary/50 p-4">
-                        <h3 className="font-semibold text-center">Analysis Result (Editable)</h3>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Nutrient</TableHead>
-                                    <TableHead className="text-right">Amount</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                <TableRow>
-                                    <TableCell>Calories</TableCell>
-                                    <TableCell className="text-right"><Input type="number" value={analysisResult.totalCalories} onChange={(e) => handleResultChange('totalCalories', e.target.value)} className="w-24 h-8 text-right ml-auto" /></TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Carbs (g)</TableCell>
-                                    <TableCell className="text-right"><Input type="number" value={analysisResult.macros.carbs} onChange={(e) => handleResultChange('carbs', e.target.value)} className="w-24 h-8 text-right ml-auto" /></TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Fats (g)</TableCell>
-                                    <TableCell className="text-right"><Input type="number" value={analysisResult.macros.fats} onChange={(e) => handleResultChange('fats', e.target.value)} className="w-24 h-8 text-right ml-auto" /></TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>Protein (g)</TableCell>
-                                    <TableCell className="text-right"><Input type="number" value={analysisResult.macros.protein} onChange={(e) => handleResultChange('protein', e.target.value)} className="w-24 h-8 text-right ml-auto" /></TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
-                         <Button onClick={handleAddLog} className="w-full">
-                            <Plus className="mr-2"/> Add to Log
-                        </Button>
+        <>
+            <Card>
+                <CardHeader>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        accept="image/*"
+                        className="hidden"
+                    />
+                     <div className="grid grid-cols-2 gap-4">
+                        <Button onClick={handleTakePhotoClick} variant="default" className="bg-black text-white hover:bg-black/90"><Camera className="mr-2" /> Take Photo</Button>
+                        <Button onClick={() => fileInputRef.current?.click()} variant="secondary"><Upload className="mr-2" /> Upload Image</Button>
                     </div>
-                )}
-            </CardFooter>
-        </Card>
+                    <Textarea
+                        placeholder="E.g., 1 bowl of oatmeal with a scoop of chocolate protein powder and a banana."
+                        value={foodDescription}
+                        onChange={(e) => setFoodDescription(e.target.value)}
+                        rows={4}
+                    />
+                </CardContent>
+                <CardFooter className="flex flex-col items-stretch gap-4">
+                    <Button onClick={handleAnalyze} disabled={isLoading || !foodDescription.trim()}>
+                        {isLoading ? <Loader2 className="animate-spin" /> : <Sparkles className="mr-2" />}
+                        Analyze Food
+                    </Button>
+
+                    {isLoading && !analysisResult && (
+                        <div className="flex justify-center items-center gap-2 text-muted-foreground">
+                            <Loader2 className="animate-spin" />
+                            <span>Analyzing... please wait.</span>
+                        </div>
+                    )}
+
+                    {analysisResult && (
+                        <div className="space-y-4 rounded-lg border bg-secondary/50 p-4">
+                            <h3 className="font-semibold text-center">Analysis Result (Editable)</h3>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Nutrient</TableHead>
+                                        <TableHead className="text-right">Amount</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <TableRow>
+                                        <TableCell>Calories</TableCell>
+                                        <TableCell className="text-right"><Input type="number" value={analysisResult.totalCalories} onChange={(e) => handleResultChange('totalCalories', e.target.value)} className="w-24 h-8 text-right ml-auto" /></TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>Carbs (g)</TableCell>
+                                        <TableCell className="text-right"><Input type="number" value={analysisResult.macros.carbs} onChange={(e) => handleResultChange('carbs', e.target.value)} className="w-24 h-8 text-right ml-auto" /></TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>Fats (g)</TableCell>
+                                        <TableCell className="text-right"><Input type="number" value={analysisResult.macros.fats} onChange={(e) => handleResultChange('fats', e.target.value)} className="w-24 h-8 text-right ml-auto" /></TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>Protein (g)</TableCell>
+                                        <TableCell className="text-right"><Input type="number" value={analysisResult.macros.protein} onChange={(e) => handleResultChange('protein', e.target.value)} className="w-24 h-8 text-right ml-auto" /></TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                             <Button onClick={handleAddLog} className="w-full">
+                                <Plus className="mr-2"/> Add to Log
+                            </Button>
+                        </div>
+                    )}
+                </CardFooter>
+            </Card>
+
+            <Dialog open={isCameraOpen} onOpenChange={setIsCameraOpen}>
+                <DialogContent className="sm:max-w-[625px]">
+                    <DialogHeader>
+                        <DialogTitle>Take a Photo</DialogTitle>
+                        <DialogDescription>
+                            Center the food item in the frame and click capture.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <video ref={videoRef} className="w-full aspect-video rounded-md bg-black" autoPlay muted playsInline />
+                        <canvas ref={canvasRef} className="hidden" />
+                        {hasCameraPermission === false && (
+                             <Alert variant="destructive">
+                                <AlertTitle>Camera Access Denied</AlertTitle>
+                                <AlertDescription>
+                                    Please allow camera access in your browser settings to use this feature.
+                                </AlertDescription>
+                            </Alert>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                            <Button type="button" variant="secondary">Cancel</Button>
+                        </DialogClose>
+                        <Button type="button" onClick={handleCapture} disabled={!hasCameraPermission}>
+                            <Camera className="mr-2" /> Capture
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 };
 
@@ -237,8 +382,8 @@ const DietaryInsights = () => {
     return (
         <Card>
             <CardHeader className="text-center">
-                <CardTitle>AI Dietary Insights</CardTitle>
-                <CardDescription>Get AI-powered personalized insights on your nutrition.</CardDescription>
+                <CardTitle className="justify-center">AI Dietary Insights</CardTitle>
+                <CardDescription>Get AI-powered personalized insights on your nutrion</CardDescription>
             </CardHeader>
             <CardContent>
                 {insights && (
