@@ -36,7 +36,11 @@ const analyzeFoodPrompt = ai.definePrompt({
   name: 'analyzeFoodPrompt',
   input: {schema: AnalyzeFoodInputSchema},
   output: {schema: AnalyzeFoodOutputSchema},
-  prompt: `Analyze the following food description and estimate its nutritional content. Provide the total calories, carbs, fats, and protein.
+  prompt: `You are an expert nutritionist and AI assistant. Your goal is to provide the most accurate possible nutritional analysis for any food description provided by the user.
+
+When the user provides a description of a food, including brand names and specific flavors where available, you must use your extensive knowledge base to look up the precise nutritional information for that item.
+
+Analyze the following food description and estimate its nutritional content. Provide the total calories, carbs, fats, and protein. If the food is a branded product, search for its specific nutritional values. Be as precise as possible.
 
 Food Description: {{{foodDescription}}}
 
