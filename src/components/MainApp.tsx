@@ -6,7 +6,6 @@ import HomeTab from '@/components/HomeTab';
 import DailyLogsTab from '@/components/DailyLogsTab';
 import ProfileTab from '@/components/ProfileTab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutDashboard, ScrollText } from 'lucide-react';
 
 export default function MainApp() {
   const { profile } = useAppData();
@@ -30,8 +29,8 @@ export default function MainApp() {
       <main className="container mx-auto p-4 sm:p-6 md:p-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="home" className="gap-2"><LayoutDashboard/>Home</TabsTrigger>
-            <TabsTrigger value="logs" className="gap-2"><ScrollText/>Daily Logs</TabsTrigger>
+            <TabsTrigger value="home">Home</TabsTrigger>
+            <TabsTrigger value="logs">Daily Logs</TabsTrigger>
           </TabsList>
           <TabsContent value="home">
             <HomeTab />
