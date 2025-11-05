@@ -14,8 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Separator } from '@/components/ui/separator';
-import { Utensils, Zap, Sparkles, Plus, Loader2, Camera, Upload, BrainCircuit, Bot } from 'lucide-react';
+import { Utensils, Zap, Sparkles, Plus, Loader2, Camera, Upload, BrainCircuit, Wand2 } from 'lucide-react';
 
 const CalorieProgress = () => {
     const { profile, logs } = useAppData();
@@ -237,12 +236,12 @@ const DietaryInsights = () => {
 
     return (
         <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><BrainCircuit /> AI Dietary Insights</CardTitle>
-                <CardDescription>Get personalized feedback on your daily intake.</CardDescription>
+            <CardHeader className="text-center">
+                <CardTitle>AI Dietary Insights</CardTitle>
+                <CardDescription>Get AI-powered personalized insights on your nutrition.</CardDescription>
             </CardHeader>
             <CardContent>
-                {insights ? (
+                {insights && (
                     <div className="space-y-4">
                         <div className="p-4 bg-green-100 dark:bg-green-900/20 border-l-4 border-green-500 rounded-r-lg">
                             <h4 className="font-semibold text-green-800 dark:text-green-300">What Went Well</h4>
@@ -253,14 +252,12 @@ const DietaryInsights = () => {
                             <p className="text-sm text-yellow-700 dark:text-yellow-400">{insights.areasForImprovement}</p>
                         </div>
                     </div>
-                ) : (
-                    <p className="text-sm text-muted-foreground">Click the button below to analyze today's meals and get feedback.</p>
                 )}
             </CardContent>
             <CardFooter>
                  <Button onClick={handleAnalyzeDay} disabled={isLoading} className="w-full">
-                    {isLoading ? <Loader2 className="animate-spin" /> : <Bot className="mr-2" />}
-                    Analyze Today's Meals with AI
+                    {isLoading ? <Loader2 className="animate-spin" /> : <Wand2 className="mr-2" />}
+                    Analyze My Meals
                 </Button>
             </CardFooter>
         </Card>
@@ -273,7 +270,6 @@ export default function HomeTab() {
     <div className="space-y-6">
       <CalorieProgress />
       <FoodAnalyzer />
-      <Separator />
       <DietaryInsights />
     </div>
   );
