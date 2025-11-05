@@ -1,0 +1,9 @@
+{
+  "name": "CalCounter AI",
+  "short_name": "CalCounter",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F0F0F0",
+  "theme_color": "#333333",
+  "description": "An AI-powered calorie and macronutrient tracker."
+}
