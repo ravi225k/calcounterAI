@@ -30,7 +30,11 @@ export default function UserProfileSetup({ onProfileCreated }: UserProfileSetupP
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: '',
+      age: '' as any,
       gender: 'male',
+      weight: '' as any,
+      height: '' as any,
+      dailyCalorieTarget: '' as any,
       fitnessGoal: 'maintain-weight',
     },
   });
