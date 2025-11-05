@@ -10,23 +10,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
   const [profile, setProfile] = useLocalStorage<UserProfile | null>('user-profile', null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    // This effect ensures that we only check localStorage on the client
-    // and avoid hydration mismatches.
-    const storedProfile = localStorage.getItem('user-profile');
-    if (storedProfile) {
-      setProfile(JSON.parse(storedProfile));
-    }
-    setIsLoading(false);
-  }, [setProfile]);
+    // This effect ensures that we only render on the client,
+    // avoiding hydration mismatches with localStorage.
+    setIsClient(true);
+  }, []);
 
   const handleProfileCreated = (newProfile: UserProfile) => {
     setProfile(newProfile);
   };
   
-  if (isLoading) {
+  if (!isClient) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background p-8">
         <div className="w-full max-w-2xl space-y-8">
