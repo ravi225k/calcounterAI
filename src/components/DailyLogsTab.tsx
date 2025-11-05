@@ -74,9 +74,80 @@ const LogList = ({ date, showHeader = true }: { date: Date, showHeader?: boolean
                 </CardHeader>
             )}
             <CardContent className={!showHeader ? "pt-6" : ""}>
-                <div className="overflow-x-auto">
+                 {dayLogs.length === 0 && <p className="text-muted-foreground text-center">No meals logged for this day.</p>}
+                
+                {/* Mobile View - Cards */}
+                <div className="md:hidden space-y-4">
+                    {dayLogs.map(log => (
+                        <Card key={log.id} className="bg-muted/30">
+                            {editingLogId === log.id && editedLog ? (
+                                <CardContent className="p-4 space-y-3">
+                                     <Input value={editedLog.foodDescription} onChange={(e) => handleDescriptionChange(e.target.value)} className="text-base font-semibold" />
+                                     <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <label className="text-xs text-muted-foreground">Calories</label>
+                                            <Input type="number" value={editedLog.calories} onChange={(e) => handleInputChange('calories', e.target.value)} className="h-8"/>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-muted-foreground">Carbs (g)</label>
+                                            <Input type="number" value={editedLog.carbs} onChange={(e) => handleInputChange('carbs', e.target.value)} className="h-8"/>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-muted-foreground">Fats (g)</label>
+                                            <Input type="number" value={editedLog.fats} onChange={(e) => handleInputChange('fats', e.target.value)} className="h-8"/>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-muted-foreground">Protein (g)</label>
+                                            <Input type="number" value={editedLog.protein} onChange={(e) => handleInputChange('protein', e.target.value)} className="h-8"/>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 justify-end pt-2">
+                                        <Button size="sm" onClick={handleSave}><Save className="h-4 w-4 mr-2" />Save</Button>
+                                        <Button size="sm" variant="ghost" onClick={handleCancel}>Cancel</Button>
+                                    </div>
+                                </CardContent>
+                            ) : (
+                                <CardContent className="p-4 space-y-2">
+                                    <div className="flex justify-between items-start">
+                                        <p className="font-semibold pr-4">{log.foodDescription}</p>
+                                        <div className="flex gap-1">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(log)}><Edit2 className="h-4 w-4" /></Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="h-4 w-4" /></Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            This action cannot be undone. This will permanently delete this log entry.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDelete(log.id)}>Delete</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                                        <div className="font-medium text-lg text-primary">{log.calories} kcal</div>
+                                        <div>Carbs: {log.carbs}g</div>
+                                        <div>Fats: {log.fats}g</div>
+                                        <div>Protein: {log.protein}g</div>
+                                    </div>
+                                </CardContent>
+                            )}
+                        </Card>
+                    ))}
+                </div>
+
+
+                {/* Desktop View - Table */}
+                <div className="hidden md:block overflow-x-auto">
                     <Table>
-                        {dayLogs.length === 0 && <TableCaption>No meals logged for this day.</TableCaption>}
+                        {dayLogs.length === 0 && !showHeader && <TableCaption>No meals logged for this day.</TableCaption>}
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[40%]">Description</TableHead>
