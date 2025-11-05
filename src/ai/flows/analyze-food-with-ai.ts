@@ -36,7 +36,7 @@ const analyzeFoodPrompt = ai.definePrompt({
   name: 'analyzeFoodPrompt',
   input: {schema: AnalyzeFoodInputSchema},
   output: {schema: AnalyzeFoodOutputSchema},
-  system: `You are a nutrition data retrieval AI. Your ONLY function is to look up and return the precise, manufacturer-provided nutritional information for branded food products. You MUST NOT estimate, calculate, or approximate values for branded items. Use your extensive knowledge base to find the exact data. If a food is not a specific brand, you may then act as an expert nutritionist to provide an accurate estimate.`,
+  system: `You are an expert nutritionist. Your primary function is to determine the nutritional content of a food item based on a user's description. You must be as accurate as possible. For branded food products, you must look up the exact nutritional information from the manufacturer. For generic foods, use the most reliable data available. Do not estimate unless absolutely necessary, and if you must estimate, you must state that the result is an estimate.`,
   prompt: `Analyze the following food description and provide its precise nutritional content.
 
 Food Description: {{{foodDescription}}}`,
