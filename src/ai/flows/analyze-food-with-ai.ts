@@ -36,25 +36,10 @@ const analyzeFoodPrompt = ai.definePrompt({
   name: 'analyzeFoodPrompt',
   input: {schema: AnalyzeFoodInputSchema},
   output: {schema: AnalyzeFoodOutputSchema},
-  prompt: `You are an expert nutritionist and AI assistant. Your goal is to provide the most accurate possible nutritional analysis for any food description provided by the user.
+  system: `You are a nutrition data retrieval AI. Your ONLY function is to look up and return the precise, manufacturer-provided nutritional information for branded food products. You MUST NOT estimate, calculate, or approximate values for branded items. Use your extensive knowledge base to find the exact data. If a food is not a specific brand, you may then act as an expert nutritionist to provide an accurate estimate.`,
+  prompt: `Analyze the following food description and provide its precise nutritional content.
 
-When the user provides a description of a food, including brand names and specific flavors where available, you must use your extensive knowledge base to look up the precise nutritional information for that item. It is critical that for branded products, you return the exact values listed by the manufacturer.
-
-Analyze the following food description and provide its precise nutritional content.
-
-Food Description: {{{foodDescription}}}
-
-Format your output as a JSON object with 'totalCalories' as a number, and 'macros' as a nested object containing 'carbs', 'fats', and 'protein', each as a number. Do NOT include units.
-
-Example:
-{
-  "totalCalories": 350,
-  "macros": {
-    "carbs": 40,
-    "fats": 15,
-    "protein": 20
-  }
-}`,
+Food Description: {{{foodDescription}}}`,
 });
 
 const analyzeFoodFlow = ai.defineFlow(
