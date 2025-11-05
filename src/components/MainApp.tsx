@@ -26,7 +26,7 @@ export default function MainApp() {
         </div>
       </header>
 
-      <main className="container mx-auto p-4 sm:p-6 md:p-8">
+      <main className="container mx-auto max-w-4xl p-4 sm:p-6 md:p-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="home">Home</TabsTrigger>
