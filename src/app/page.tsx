@@ -35,6 +35,13 @@ export default function Home() {
     );
   }
 
-  // Always show the setup screen for review
+  if (profile) {
+    return (
+      <AppDataProvider initialProfile={profile} onProfileUpdate={setProfile}>
+        <MainApp />
+      </AppDataProvider>
+    );
+  }
+
   return <UserProfileSetup onProfileCreated={handleProfileCreated} />;
 }
