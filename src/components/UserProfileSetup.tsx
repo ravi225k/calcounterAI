@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Utensils } from 'lucide-react';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -47,15 +46,10 @@ export default function UserProfileSetup({ onProfileCreated }: UserProfileSetupP
     <main className="flex min-h-screen w-full items-center justify-center bg-background p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-2xl shadow-lg">
         <CardHeader>
-          <div className="flex items-center gap-4">
-            <div className="bg-primary text-primary-foreground p-3 rounded-lg">
-                <Utensils className="h-8 w-8" />
-            </div>
             <div>
                 <CardTitle className="text-3xl font-bold tracking-tight">Welcome to CalCounter AI</CardTitle>
                 <CardDescription className="text-lg">Let's set up your profile to get started.</CardDescription>
             </div>
-          </div>
         </CardHeader>
         <CardContent>
           <Form {...form}>

@@ -17,8 +17,8 @@ export default function MainApp() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-30 border-b bg-background/80 px-4 py-3 backdrop-blur-sm sm:px-6 md:px-8">
-        <div>
+      <header className="sticky top-0 z-30 border-b bg-background/80 px-4 py-4 backdrop-blur-sm sm:px-6 md:px-8">
+        <div className="pl-4">
           <h1 className="text-2xl font-bold tracking-tight text-primary font-headline">CalCounter AI</h1>
           <button onClick={() => setActiveTab('profile')} className="text-sm text-muted-foreground hover:text-primary">
             Hi, {profile.name}!

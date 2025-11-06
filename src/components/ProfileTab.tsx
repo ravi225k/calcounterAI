@@ -11,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { User } from 'lucide-react';
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -44,7 +43,7 @@ export default function ProfileTab() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><User /> Your Profile</CardTitle>
+          <CardTitle>Your Profile</CardTitle>
           <CardDescription>Update your personal information and fitness goals.</CardDescription>
         </CardHeader>
         <CardContent>
