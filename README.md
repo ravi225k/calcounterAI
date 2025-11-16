@@ -1,4 +1,4 @@
-# Firebase Studio
+# CalCounter AI
 
 This is a NextJS starter in Firebase Studio.
 
